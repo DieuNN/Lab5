@@ -24,9 +24,9 @@ public class MainActivity extends AppCompatActivity {
     ListView listView;
     ProductAdapter adapter;
     ProductDB productDB = new ProductDB(new DBHandler(this));
-
     TextView isProductExist;
     Button add;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,14 +34,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mapping();
 
-        if (productDB.getAllProduct().size() == 0) {
+
+        ArrayList<Product> list = productDB.getAllProduct();
+        ProductAdapter adapter = new ProductAdapter(MainActivity.this, R.layout.product_row, list);
+        if (list.size() == 0) {
             isProductExist.setVisibility(View.VISIBLE);
             listView.setVisibility(View.INVISIBLE);
         } else {
             listView.setVisibility(View.VISIBLE);
+            listView.setAdapter(adapter);
             isProductExist.setVisibility(View.INVISIBLE);
         }
-        ArrayList<Product> list = productDB.getAllProduct();
 
 
         listView.setOnItemLongClickListener((parent, view, position, id) -> {
@@ -57,7 +60,9 @@ public class MainActivity extends AppCompatActivity {
                                         } else {
                                             Toast.makeText(MainActivity.this, "Xóa thất bại", Toast.LENGTH_SHORT).show();
                                         }
+                                        adapter.notifyDataSetChanged();
                                         listView.setAdapter(new ProductAdapter(MainActivity.this, R.layout.product_row, productDB.getAllProduct()));
+
                                     } catch (Exception e) {
                                         Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
                                     }
@@ -72,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
-        listView.setAdapter(new ProductAdapter(MainActivity.this, R.layout.product_row, productDB.getAllProduct()));
+        listView.setAdapter(adapter);
 
         add.setOnClickListener(new View.OnClickListener() {
             @Override
