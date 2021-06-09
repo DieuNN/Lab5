@@ -20,7 +20,6 @@ public class ProductDB {
 
     public boolean delete(String id) {
         database = handler.getWritableDatabase();
-
         if(database.delete(handler.TABLE_PRODUCT, "id = ?",  new String[]{id}) >=0) {
             return true;
         } else {

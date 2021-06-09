@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -34,50 +35,40 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mapping();
 
+        ArrayList<Product> products = productDB.getAllProduct();
+        ProductAdapter adapter = new ProductAdapter(this, R.layout.product_row, products);
+        listView.setAdapter(adapter);
 
-        ArrayList<Product> list = productDB.getAllProduct();
-        ProductAdapter adapter = new ProductAdapter(MainActivity.this, R.layout.product_row, list);
-        if (list.size() == 0) {
-            isProductExist.setVisibility(View.VISIBLE);
-            listView.setVisibility(View.INVISIBLE);
-        } else {
-            listView.setVisibility(View.VISIBLE);
-            listView.setAdapter(adapter);
-            isProductExist.setVisibility(View.INVISIBLE);
-        }
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(MainActivity.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Thông báo")
+                        .setMessage("Bạn muốn xóa?")
+                        .setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
 
-
-        listView.setOnItemLongClickListener((parent, view, position, id) -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setTitle("Thông báo")
-                    .setMessage("Bạn có muốn xóa sản phẩm?")
-                    .setPositiveButton("Xóa", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    try {
-                                        if(productDB.delete(list.get(position).getId())) {
-                                            Toast.makeText(MainActivity.this, "Xóa thành công!", Toast.LENGTH_SHORT).show();
-                                        } else {
-                                            Toast.makeText(MainActivity.this, "Xóa thất bại", Toast.LENGTH_SHORT).show();
-                                        }
-                                        adapter.notifyDataSetChanged();
-                                        listView.setAdapter(new ProductAdapter(MainActivity.this, R.layout.product_row, productDB.getAllProduct()));
-
-                                    } catch (Exception e) {
-                                        Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
-                                    }
+                            }
+                        })
+                        .setPositiveButton("Xóa", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                ArrayList<Product> list = productDB.getAllProduct();
+                                if(productDB.delete(list.get(position).getId())) {
+                                    Toast.makeText(MainActivity.this, "Xóa thành công!", Toast.LENGTH_SHORT).show();
+                                    onResume();
+                                } else {
+                                    Toast.makeText(MainActivity.this, "Xóa thất bại!", Toast.LENGTH_SHORT).show();
                                 }
                             }
-                    ).setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-
-                }
-            }).create().show();
-            return false;
+                        })
+                        .create().show();
+                return false;
+            }
         });
 
-        listView.setAdapter(adapter);
 
         add.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -98,9 +89,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (productDB.getAllProduct().size() == 0) {
-            isProductExist.setVisibility(View.INVISIBLE);
-        }
-        listView.setAdapter(new ProductAdapter(MainActivity.this, R.layout.product_row, productDB.getAllProduct()));
+        ArrayList<Product> products = productDB.getAllProduct();
+        ProductAdapter adapter = new ProductAdapter(this, R.layout.product_row, products);
+        listView.setAdapter(adapter);
     }
 }
